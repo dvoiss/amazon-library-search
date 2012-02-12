@@ -4,14 +4,15 @@ require "open-uri"
 # books filter id
 BOOKS = 3
 #BASE_URL = "http://www.amazon.com/gp/registry/wishlist/"
-BASE_URL = "http://www.amazon.com/registry/wishlist/"
-URL = BASE_URL + "DB9C2V4SS2YQ" + "/?reveal=unpurchased&filter=#{BOOKS}&sort=date-added&layout=compact&x=9&y=1"
+BASE_AMAZON_URL = "http://www.amazon.com/registry/wishlist/"
+URL = BASE_AMAZON_URL + "DB9C2V4SS2YQ" + "/?reveal=unpurchased&filter=#{BOOKS}&sort=date-added&layout=compact&x=9&y=1"
 
 LIBRARY_THING_ISBN_URL = "http://www.librarything.com/api/thingISBN/"
 
-BRANCH_ID = 320
+LIBRARY_BASE_URL = "http://www.chipublib.org"
 LIBRARY_SEARCH_URL = "http://www.chipublib.org/search/results/"
 LIBRARY_REFERER_URL = "http://www.chipublib.org/search/advanced/"
+LIBRARY_ERROR_STRING = "Your search did not produce any results."
 
 page_num = 1
 max_page_num = 0
@@ -28,7 +29,7 @@ loop do
     max_page_num = page.css('table[class=sortbarTopTable] span[class=num-pages]').text.to_i
   end
 
-  puts "Attempting to retrieve page #{page_num.to_s}" + 
+  puts "Retrieved page #{page_num.to_s}" + 
     (max_page_num > 0 ? " of #{max_page_num.to_s}" : "")
 
   # get the divs and parse out their title and author
@@ -47,7 +48,13 @@ loop do
     if isbn_available && isbn_available.captures.one?
       isbn = isbn_available.captures.pop
       title = part.css('span[class="small productTitle"] a').text
-      authors = part.css('span[class="tiny"]').first.text.gsub(/\s*by\s+/, '').match(/([\w\s\'\-\.]+)/) #gsub(/\s+\(Author\)\s+/, '')
+      books.push({ :title => title, :isbn => isbn })
+
+      # right now, not using author:
+      next
+      # grab the author, eliminating the " by " text,
+      # also eliminate the special characters
+      authors = part.css('span[class="tiny"]').first.text.gsub(/\s*by\s+/, '').match(/([\w\s\'\-\.]+)/)
       if authors && authors.captures
         books.push({ :author => authors.captures.first.strip, :title => title, :isbn => isbn })
       end
@@ -62,95 +69,126 @@ loop do
   # don't make too many requests too fast :)
   sleep 1/10
 end
-puts books
-
-=begin
-title_string = "&title="
-iter = 0
-for title in books
-  if iter != 0
-    title_string += '+or+'
-  end
-  title_string = title_string + '"' + title.gsub(/[^\w\s]/, '').gsub(/\s+/, '+') + '"'
-  iter = iter + 1
-end
-
-author_string = "&author="
-iter = 0
-for author in authors
-  if iter != 0
-    author_string += '+or+'
-  end
-  # build string, eliminating special characters and collapsing white space down to '+'
-  author_string = author_string + author.gsub(/[^\w\s]/, '').gsub(/\s+/, '+')
-  iter = iter + 1
-end
-=end
 
 require 'cgi'
 require 'uri'
 require 'net/https'
 require 'zlib'
 
-def inflate(body)
-  #zstream = Zlib::Inflate.new
-  #buf = zstream.inflate(body)
-  gz = Zlib::GzipReader.new(StringIO.new(body))
-  puts gz.read
-end
+def fetch(uri_str, limit = 5, page_type = "search")
+  if limit > 0
+    uri = URI.parse(uri_str)
 
-# http://ruby-doc.org/stdlib/libdoc/net/http/rdoc/classes/Net/HTTP.html
-def fetch(uri_str, limit = 5)
-  # You should choose better exception.
-  raise ArgumentError, 'HTTP redirect too deep' if limit == 0
+    # user-agent
+    ua = {
+      "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7",
+      "Referer" => LIBRARY_REFERER_URL,
+      "Host" => uri.host,
+      "Accept-Encoding" => "gzip,deflate,sdch"
+    }
 
-  uri = URI.parse(uri_str)
-  ua = { "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7", "Referer" => LIBRARY_REFERER_URL, "Host" => uri.host }
-  #ua = { "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_2) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7", "Referer" => LIBRARY_REFERER_URL, "Host" => uri.host, "Connection" => "keep-alive", "Accept-Encoding" => "gzip,deflate,sdch", "Accept-Language" => "en-US,en;q=0.8", "Accept-Charset" => "ISO-8859-1,utf-8;q=0.7,*;q=0.3", "Accept" => "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" }
-
-  request = Net::HTTP::Get.new(uri.path, ua)
-  #request.initialize_http_header({"User-Agent" => "Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)",
-  #  "Referer" => LIBRARY_BASE_URL, "Host" => uri.host})
-  response = Net::HTTP.start(uri.host, uri.port) { |http| http.request(request) }
-  case response
-  when Net::HTTPSuccess     then puts response.body# inflate(response.body)# "#{response.body}\n#{response['Content-Encoding']}"
-  when Net::HTTPRedirection then fetch(response['location'], limit - 1)
+    # reference: http://ruby-doc.org/stdlib/libdoc/net/http/rdoc/classes/Net/HTTP.html
+    request = Net::HTTP::Get.new(uri.request_uri)
+    request.initialize_http_header(ua)
+    response = Net::HTTP.start(uri.host, uri.port) { |http| http.request(request) }
+    case response
+    when Net::HTTPSuccess     then { :response => response, :page_type => page_type }
+    when Net::HTTPRedirection then puts "REDIRECT #{response['location']}"; fetch("#{LIBRARY_BASE_URL + response['location']}", limit - 1, "detail")
+    else
+      response.error!
+    end
   else
-    response.error!
+    "TOO MANY REDIRECTS"
   end
 end
 
-#books.each do |isbn|
-books.each do |book|
-=begin
+# use librarything's ISBN api to retrieve related ISBNs,
+# so we don't miss the book we want because of a reprint or different edition,
+# one book can have many ISBNs as a result of different versions, etc.
+def get_related_isbns(isbn)
   related_isbns = []
   page = Nokogiri::XML(open("http://www.librarything.com/api/thingISBN/" + isbn))
-  #isbns = page.xpath('//isbn')
   page.xpath('//isbn').each do |related_isbn|
     related_isbns.push(related_isbn.text)
   end
-  isbn_search_string = related_isbns.join('+or+')
-  fetch("http://www.chipublib.org/search/results/?keywords=&isbn=" + "0060891548" + "&location=&advancedSearch=submitted")
-=end
-#  uri = URI.parse("http://www.chipublib.org/search/results/?keywords=&isbn=" + "0060891548" + "&location=&advancedSearch=submitted")
-  #uri = URI.parse("http://www.chipublib.org/search/results/?keywords=&isbn=" + isbn_search_string + "&location=&format=Book&language=English&advancedSearch=submitted")
-#  uri = URI.parse("http://www.chipublib.org/search/results/?keywords=&title=neuromancer&location=&format=Book&language=English&advancedSearch=submitted")
 
-  #fetch("#{LIBRARY_SEARCH_URL}?keywords=&title=#{CGI.escape(book[:title])}&author=#{CGI.escape(book[:author])}&submitButton.x=52&submitButton.y=18&submitButton=Search&location=&advancedSearch=submitted")
-  #fetch("#{LIBRARY_SEARCH_URL}?keywords=&title=blah&author=&submitButton.x=52&submitButton.y=18&submitButton=Search&location=&advancedSearch=submitted")
-  fetch("http://www.chipublib.org/search/results/?keywords=&isbn=" + "0060891548" + "&location=&advancedSearch=submitted")
-  #fetch("http://www.chipublib.org/search/results/?keywords=&title=test&author=&series=&subject=&isbn=&controlNumber=&callNumber=&publisher=&range=&published=&published2=&submitButton.x=68&submitButton.y=19&submitButton=Search&location=&format=&language=&audience=allAudiences&fict=allFormats&advancedSearch=submitted")
-  #puts "#{LIBRARY_SEARCH_URL}?keywords=&title=#{CGI.escape(book[:title])}&author=#{CGI.escape(book[:author])}&location=&advancedSearch=submitted"
-break
-  page = Nokogiri::HTML(response.body)
-
-  if response.code.to_s.index("Your search did not produce any results.") == -1
-    puts page
-    break
-  elsif
-    puts LIBRARY_SEARCH_URL + '?isbn=' + isbn_search_string + "&format=Book&advancedSearch=submitted"
-  end
-
-  sleep 1/10
+  related_isbns
 end
 
+BRANCH_LOCATION = 320
+NOT_CHECKED_OUT = "Not checked out"
+
+def parse_detail(body)
+  page = Nokogiri::HTML(body)
+  libraries = []
+  page.css('table[class=summary] tr').each do |tablerow|
+    if tablerow.to_s.index(NOT_CHECKED_OUT) != nil
+      # it's at our library, break out of loop
+      if BRANCH_LOCATION != nil && tablerow.previous_sibling.to_s.index("Your Library") != nil 
+        libraries.push "My Library"
+        break
+      end
+
+      # it isn't checked out at this location, save library name
+      libraries.push tablerow.css('td').first.text
+    end
+  end
+
+  libraries
+end
+
+def available_at(page)
+  libraries_available = []
+  links = page.css("ol[class=result] li[class=clearfix] h3 a")
+  links.each do |link|
+    fetch_result = fetch("#{LIBRARY_BASE_URL + (link.attr 'href')}")
+    body = Zlib::GzipReader.new(StringIO.new(fetch_result[:response].body)).read
+    libraries_available.concat parse_detail(body)
+
+    # should we go to the next link? do we already know if it's available at our library?
+    if libraries_available.include? "My Library"; break end
+  end
+
+  libraries_available
+end
+
+# go through books
+books.each do |book|
+  successful_find = true
+
+  # get related isbns and limit collection to a maximum of 10 ISBNs
+  related_isbns = get_related_isbns(book[:isbn])[0...10]
+  # search through ISBNs, 5 at a time (due to limits on chipublib search),
+  # break at first results found
+  (0...related_isbns.length).step(5) do |count|
+    isbn_search_range = related_isbns[count...count+5]
+    isbn_search_string = isbn_search_range.join('+or+')
+
+    fetch_result = fetch(
+      "#{LIBRARY_SEARCH_URL}?keywords=&title=&isbn=#{isbn_search_string}&location=#{BRANCH_LOCATION}&format=Book&advancedSearch=submitted"
+    )
+
+    # unzip
+    body = Zlib::GzipReader.new(StringIO.new(fetch_result[:response].body)).read
+
+    libraries_available = []
+    if fetch_result[:page_type] == "search"
+      if body.index(LIBRARY_ERROR_STRING) == nil
+        # assemble a collection of results
+        page = Nokogiri::HTML(body)
+        libraries_available = available_at(page)
+      else
+        # puts LIBRARY_ERROR_STRING
+      end
+    else # detail
+      libraries_available = parse_detail(body)
+    end
+
+    if not libraries_available.empty?
+      puts book[:title], libraries_available.uniq.to_s
+      break
+    end
+
+    sleep 1/10
+  end
+end
