@@ -10,7 +10,7 @@ Finally the retrieved ISBNs are fed into the [Chicago Public Library](http://www
 
 Add your email and leave the library-id blank to search entire system. Todo: make these ids available so they don't need to be looked up at [chipublib.org](chipublib.org)..
 
-  $ ruby search.rb 
+    $ ruby search.rb
     Usage: search.rb [email] [library-id]
 
     Library id can be left blank, otherwise an id is needed corresponding to
@@ -18,7 +18,7 @@ Add your email and leave the library-id blank to search entire system. Todo: mak
 
 # Example
 
-  $ ruby search.rb me@email.com 320
+    $ ruby search.rb me@email.com 320
     Retrieving wishlist
     Finding books...
 
