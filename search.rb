@@ -215,7 +215,7 @@ def find_books(books, library)
     end
   end
 
-  puts "No books available" unless book_available == true
+  puts "#{ORANGE_COLOR}No books available#{CLEAR_COLOR}" unless book_available == true
 end
 
 # usage:
