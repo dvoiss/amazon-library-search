@@ -1,3 +1,8 @@
+# This script accepts an email address to use to retrieve an Amazon wishlist
+# for, and an optional branch-ID for the Chicago Public Library system. The
+# script parses the wishlist and finds the books that are available for
+# *CHECK OUT* (unavailable books, in-transit, on hold, etc. are ignored).
+
 require 'net/https'
 require "open-uri"
 require 'uri'
@@ -30,7 +35,8 @@ def get_wishlist(email)
 
   puts "Retrieving wishlist"
 
-  uri = URI.parse("http://www.amazon.com/registry/search.html?type=wishlist&filter=3&layout=compact&field-name=#{email}")
+  # attempt to retrieve the wishlist
+  uri = URI.parse("http://www.amazon.com/registry/search.html?type=wishlist&field-name=#{email}")
   uri_path = "#{uri.path}?#{uri.query}"
   request = Net::HTTP::Get.new(uri_path)
   response = Net::HTTP.start(uri.host, uri.port) do |http|
@@ -44,7 +50,6 @@ def get_wishlist(email)
   end
 
   page = Nokogiri::HTML(open("#{wishlist_url}&filter=3&layout=compact"))
-
   # get the divs and parse out their title and author
   page.css('tbody[class=itemWrapper]').each do |part|
     link_with_isbn = part.css('span[class="small productTitle"] a')
@@ -138,9 +143,10 @@ def parse_detail(body)
   libraries
 end
 
+# parse the "search results page"
 # get the libraries the book is available at, if it is available at the library
 # specified by LIBRARY_MY_STRING, then just return that library
-def available_at(page)
+def parse_search_results(page)
   libraries_available = []
   links = page.css("ol[class=result] li[class=clearfix] h3 a")
   links.each do |link|
@@ -158,6 +164,7 @@ end
 # go through books and tell me if they are available at my local library
 def find_books(books, library)
   puts "Finding books..."
+  book_available = false
 
   books.each do |book|
     # get related isbns and limit collection to a maximum of 10 ISBNs
@@ -179,14 +186,17 @@ def find_books(books, library)
         if body.index(LIBRARY_NO_RESULTS_STRING) == nil
           # assemble a collection of results
           page = Nokogiri::HTML(body)
-          libraries_available = available_at(page)
+          libraries_available = parse_search_results(page)
         else
+          # no results for this book's ISBN(s)
           # puts LIBRARY_NO_RESULTS_STRING
         end
-      else # detail
+      else # detail, one result for this book's ISBN(s)
         libraries_available = parse_detail(body)
       end
 
+      # if it's available at our library, don't bother going through any other ISBNs for this book,
+      # just tell me it's available so the next book can be processed
       if libraries_available.include? LIBRARY_MY_STRING; break end
 
       # don't make too many requests too fast :)
@@ -195,15 +205,20 @@ def find_books(books, library)
 
     # show where the book is available, if it isn't available, output nothing
     if libraries_available.include? LIBRARY_MY_STRING
+      book_available = true
       puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at your library."
     elsif libraries_available.length > 0 && LIBRARY_BRANCH_LOCATION == ''
+      book_available = true
       puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at: #{libraries_available.uniq.join(', ')}"
     else
       # puts "#{book[:title]} is not available."
     end
   end
+
+  puts "No books available" unless book_available == true
 end
 
+# usage:
 unless ARGV.length == 1 || ARGV.length == 2
   puts "Usage: #{$0} [email] [library-id]"
   puts "Library id can be left blank, otherwise an id is needed corresponding to"
@@ -214,6 +229,7 @@ end
 
 email = ARGV[0]
 
+# second arg not specified?
 case ARGV[1]
 when nil then library = ''
 else library = ARGV[1]

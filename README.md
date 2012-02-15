@@ -43,3 +43,16 @@ No library branch specified:
     Last Call is available at: Sulzer Regional, HWLC 7th Floor
     Delivering Happiness: A Path to Profits, Passion, and Purpose is available at: Brighton Park, Chicago Lawn, HWLC 1st Floor, HWLC 4th Floor, Humboldt Park, Jefferson Park, Jeffery Manor, Mayfair, North Pulaski, Roosevelt, South Shore, Walker, Water Works, West Lawn, West Town, Woodson Regional, Wrightwood-Ashburn
     Innumeracy: Mathematical Illiteracy and Its Consequences (Vintage) is available at: HWLC 4th Floor, Rogers Park, Uptown, Legler
+
+No wishlist found:
+
+    $ ruby search.rb fake@email.com
+    Retrieving wishlist
+    Cannot find the wishlist for riseinjoy@hotmail.com
+
+Wishlist found but no books available:
+
+    $ ruby search.rb test@email.com 320
+    Retrieving wishlist
+    Finding books...
+    No books available
