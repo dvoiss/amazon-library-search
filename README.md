@@ -48,7 +48,7 @@ No wishlist found:
 
     $ ruby search.rb fake@email.com
     Retrieving wishlist
-    Cannot find the wishlist for riseinjoy@hotmail.com
+    Cannot find the wishlist for fake@email.com
 
 Wishlist found but no books available:
 
