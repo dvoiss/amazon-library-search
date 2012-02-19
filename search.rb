@@ -25,6 +25,7 @@ LIBRARY_NOT_CHECKED_OUT = "Not checked out"
 
 # for printing to term, ANSI color, windows support = ?
 ORANGE_COLOR = "\033[33m"
+GREEN_COLOR = "\033[32m"
 CLEAR_COLOR  = "\033[0m"
 
 # loop through the pages of the wishlist,
@@ -203,15 +204,16 @@ def find_books(books, library)
       # sleep 1/10
     end
 
-    # show where the book is available, if it isn't available, output nothing
+    # show where the book is available
     if libraries_available.include? LIBRARY_MY_STRING
       book_available = true
-      puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at your library."
+      puts "#{GREEN_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at your library."
     elsif libraries_available.length > 0 && LIBRARY_BRANCH_LOCATION == ''
       book_available = true
-      puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at: #{libraries_available.uniq.join(', ')}"
+      puts "#{GREEN_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at: #{libraries_available.uniq.join(', ')}"
     else
-      # puts "#{book[:title]} is not available."
+      # show those unavailable
+      #puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is not available."
     end
   end
 
