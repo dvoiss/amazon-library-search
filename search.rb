@@ -50,6 +50,7 @@ def get_wishlist(email)
     exit
   end
 
+  # the filter=3 is filter by books
   page = Nokogiri::HTML(open("#{wishlist_url}&filter=3&layout=compact"))
   # get the divs and parse out their title and author
   page.css('tbody[class=itemWrapper]').each do |part|
@@ -168,8 +169,8 @@ def find_books(books, library)
   book_available = false
 
   books.each do |book|
-    # get related isbns and limit collection to a maximum of 10 ISBNs
-    related_isbns = get_related_isbns(book[:isbn])[0...10]
+    # get related isbns and limit collection to a maximum of 20 ISBNs
+    related_isbns = get_related_isbns(book[:isbn])[0...20]
 
     libraries_available = []
     # search through ISBNs, 5 at a time (due to limits on chipublib search),
@@ -213,7 +214,7 @@ def find_books(books, library)
       puts "#{GREEN_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at: #{libraries_available.uniq.join(', ')}"
     else
       # show those unavailable
-      #puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is not available."
+      # puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is not available."
     end
   end
 

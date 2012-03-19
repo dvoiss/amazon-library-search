@@ -13,7 +13,9 @@ Add your email and leave the library-id blank to search entire system. Todo: mak
     $ ruby search.rb
     Usage: search.rb [email] [library-id]
 
-    Library id can be left blank, otherwise an id is needed corresponding to the library you want, example: 70 for Chinatown, 320 for Bucktown-Wicker park (these were obtained by searching at the library site and looking at the id in the url).
+    Library id can be left blank, otherwise an id is needed corresponding to the library you want, 
+    example: 70 for Chinatown, 320 for Bucktown-Wicker park 
+    (these were obtained by searching at the library site and looking at the id in the url).
 
 # Example
 
