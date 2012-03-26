@@ -1,0 +1,56 @@
+* {
+  font-size: 14px;
+}
+
+ul {
+  list-style-type: none;
+}
+
+li:hover {
+  background-color: #eee;
+  cursor: pointer;
+}
+
+div#statusContainer {
+  padding: 5px;
+  display: none;
+}
+
+img#progressSpinner {
+  display: none;
+}
+
+div#statusContainer img {
+  float: left;
+  padding-right: 5px;
+}
+
+p#status {
+  display: inline;
+}
+
+#backBtn {
+  display: none;
+}
+
+div#wrapper {
+  width: 48em;
+  margin: auto auto;
+}
+
+div#form {
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.5em;
+  text-align: center;
+}
+
+span.bookTitle {
+  font-weight: bold;
+}
+
+span.library {
+  font-style: italic;
+}

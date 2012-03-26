@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Library Search</title>
+    
+    <link rel="stylesheet" type="text/css" media="all" href="/css/reset.css">
+    <link rel="stylesheet" type="text/css" media="all" href="/css/app.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="/js/app.js"></script>
+  </head>
+
+  <body>
+
+    <div id="wrapper">
+
+      <h1>Library Search</h1>
+
+      <div id="form">
+        <input id='email' name='email' value='ssj4_dave@hotmail.com' />
+        <input id='library' name='library' value='Search all libraries' />
+        <input id="searchBtn" type='submit' value="Submit" />
+      </div>
+
+      <input id="backBtn" type="submit" value="Back"/>
+
+      <div id="results">
+        <div id="statusContainer">
+          <img id="progressSpinner" src="/assets/progress.gif" alt="Progress Spinner"/>
+          <p id="status"></p>
+        </div>
+        <ul id="list"></ul>
+      </div>
+
+    </div>
+
+  </body>
+</html>
