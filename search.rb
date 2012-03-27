@@ -1,8 +1,3 @@
-# This script accepts an email address to use to retrieve an Amazon wishlist
-# for, and an optional branch-ID for the Chicago Public Library system. The
-# script parses the wishlist and finds the books that are available for
-# *CHECK OUT* (unavailable books, in-transit, on hold, etc. are ignored).
-
 require 'net/https'
 require "open-uri"
 require 'uri'
@@ -23,18 +18,12 @@ LIBRARY_NO_RESULTS_STRING = "Your search did not produce any results."
 LIBRARY_MY_STRING = "My Library"
 LIBRARY_NOT_CHECKED_OUT = "Not checked out"
 
-# for printing to term, ANSI color, windows support = ?
-ORANGE_COLOR = "\033[33m"
-GREEN_COLOR = "\033[32m"
-CLEAR_COLOR  = "\033[0m"
+@@library_branch_location = ''
 
-# loop through the pages of the wishlist,
-# on the first time through after we receive the first page, we'll grab the
-# maximum number of pages
-def get_wishlist(email)
+# loop through the items of the wishlist,
+# compact wishlists are 1 page?
+def get_wishlist(email, stream)
   books = []
-
-  puts "Retrieving wishlist"
 
   # attempt to retrieve the wishlist
   uri = URI.parse("http://www.amazon.com/registry/search.html?type=wishlist&field-name=#{email}")
@@ -46,8 +35,12 @@ def get_wishlist(email)
   wishlist_url = response['location']
 
   if wishlist_url.nil?
-    puts "Cannot find the wishlist for #{email}"
-    exit
+    stream << "data: status: Cannot find the wishlist for #{email}\n\n"
+    stream << "data: #{nil}\n\n"
+    stream.flush
+    return
+  else
+    stream << "data: status: Found the wishlist for #{email}\n\n"
   end
 
   # the filter=3 is filter by books
@@ -64,18 +57,7 @@ def get_wishlist(email)
     if isbn_available && isbn_available.captures.one?
       isbn = isbn_available.captures.pop
       title = link_with_isbn.text.strip
-      books.push({ :title => title, :isbn => isbn })
-
-      # right now, I'm not using author:
-      next
-
-      # grab the author, eliminating the " by " text if it exists,
-      # also eliminate the special characters
-      authors = part.css('span[class="tiny"]').first.text.gsub(/\s*by\s+/, '').match(/([\w\s\'\-\.]+)/)
-      if authors and not authors.captures.empty?
-        # temporarily use the first author
-        books.push({ :author => authors.captures.first.strip, :title => title, :isbn => isbn })
-      end
+      books.push({ :title => title, :isbn => isbn, :url => link.attr('href') })
     end
   end
 
@@ -133,7 +115,7 @@ def parse_detail(body)
   page.css('table[class=summary] tr').each do |tablerow|
     if tablerow.to_s.index(LIBRARY_NOT_CHECKED_OUT) != nil
       # it's at our library, break out of loop
-      if LIBRARY_BRANCH_LOCATION != nil && tablerow.previous_sibling.to_s.index("Your Library") != nil 
+      if @@library_branch_location != nil && tablerow.previous_sibling.to_s.index("Your Library") != nil 
         return [LIBRARY_MY_STRING]
       end
 
@@ -164,8 +146,9 @@ def parse_search_results(page)
 end
 
 # go through books and tell me if they are available at my local library
-def find_books(books, library)
-  puts "Finding books..."
+def find_books(books, library, stream)
+  @@library_branch_location = library
+  stream << "data: status: Finding which books are available...\n\n"
   book_available = false
 
   books.each do |book|
@@ -179,7 +162,7 @@ def find_books(books, library)
       isbn_search_range = related_isbns[count...count+5]
       isbn_search_string = isbn_search_range.join('+or+')
 
-      fetch_result = fetch("#{LIBRARY_SEARCH_URL}?&isbn=#{isbn_search_string}&location=#{LIBRARY_BRANCH_LOCATION}&format=Book&advancedSearch=submitted")
+      fetch_result = fetch("#{LIBRARY_SEARCH_URL}?&isbn=#{isbn_search_string}&location=#{@@library_branch_location}&format=Book&advancedSearch=submitted")
 
       # unzip
       body = Zlib::GzipReader.new(StringIO.new(fetch_result[:response].body)).read
@@ -202,49 +185,28 @@ def find_books(books, library)
       if libraries_available.include? LIBRARY_MY_STRING; break end
 
       # don't make too many requests too fast :)
-      # sleep 1/10
+      sleep 1/60
     end
 
     # show where the book is available
+    html = "<li><a href='#{book[:url]}' title='#{book[:title]}'>#{book[:title]}</a> is available"
     if libraries_available.include? LIBRARY_MY_STRING
       book_available = true
-      puts "#{GREEN_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at your library."
-    elsif libraries_available.length > 0 && LIBRARY_BRANCH_LOCATION == ''
+      stream << "data: #{html}\n\n"
+    elsif libraries_available.length > 0 && @@library_branch_location == ''
       book_available = true
-      puts "#{GREEN_COLOR}#{book[:title]}#{CLEAR_COLOR} is available at: #{libraries_available.uniq.join(', ')}"
+      html += " at "
+      libraries_available.uniq.each do |library|
+        html += "<span class='library'>#{library}</span>"
+        if (libraries_available.last != library); html += ", " end
+      end
+      html += "</li>"
+      stream << "data: #{html}\n\n"
     else
       # show those unavailable
-      # puts "#{ORANGE_COLOR}#{book[:title]}#{CLEAR_COLOR} is not available."
     end
+
   end
 
-  puts "#{ORANGE_COLOR}No books available#{CLEAR_COLOR}" unless book_available == true
+  stream << "data: status: None of your books are available.\n\n" unless book_available == true
 end
-
-# usage:
-unless ARGV.length == 1 || ARGV.length == 2
-  puts "Usage: #{$0} [email] [library-id]"
-  puts "Library id can be left blank, otherwise an id is needed corresponding to"
-  puts "the library you want, example: 70 for Chinatown, 320 for Bucktown-Wicker park"
-  puts "defaults to Bucktown-Wicker Park (ids are from chipublib.org's catalog search)"
-  exit
-end
-
-email = ARGV[0]
-
-# second arg not specified?
-case ARGV[1]
-when nil then library = ''
-else library = ARGV[1]
-end
-
-LIBRARY_BRANCH_LOCATION = library
-
-# TODO:
-# Sinatra-fy into heroku app so I can use on my phone
-# - due to the many requests that need to be made, 
-# - combined with the scraping/parsing,
-# - it is probably too slow to be useful
-
-books = get_wishlist(email)
-find_books(books, library)

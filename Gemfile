@@ -1,5 +1,7 @@
 source :rubygems
 
+gem 'foreman'
 gem 'sinatra'
-gem 'haml'
+gem 'sinatra-contrib'
+gem 'thin'
 gem 'nokogiri'
