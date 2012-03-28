@@ -64,6 +64,8 @@ header {
 header span {
   font-style: italic;
   letter-spacing: 1px;
+  display: block;
+  margin-bottom: .25em;
 }
 
 a#header-link {
@@ -134,6 +136,14 @@ a#back-btn {
   float: right;
 }
 
+em, i {
+  font-style: italic;
+}
+
+strong, b {
+  font-weight: bold;
+}
+
 /* ------------------------------------------------------------------------
  * iPad / tablets
  * ------------------------------------------------------------------------ */
@@ -165,21 +175,30 @@ a#back-btn {
  * ------------------------------------------------------------------------ */
 
 @media screen and (max-width: 420px) {
+  body {
+    font-size: 1em;
+  }
+
   div#wrapper {
     max-width: 420px;
     padding: 0 5% 50px 5%;
   }
 
   input#email {
+    margin: 0 auto;
     margin-bottom: 5px;
     width: 75%;
+    display: block;
   }
 
   select#library-select {
+    margin: 0 auto;
     margin-bottom: 5px;
+    width: 75%;
+    display: block;
   }
 
-  header span {
-    font-size: .8em;
+  header {
+    font-size: .75em;
   }
 }
