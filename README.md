@@ -1,6 +1,6 @@
 ## A mash-up of Amazon / Library Thing / Chicago Public Library
 
-This is a Heroku app to check which books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library.
+This is a Heroku app to check which books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`.
 
 ### Demo
 
