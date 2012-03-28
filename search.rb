@@ -44,7 +44,7 @@ def get_wishlist(email, stream)
   end
 
   # the filter=3 is filter by books
-  page = Nokogiri::HTML(open("#{wishlist_url}&filter=3&layout=compact"))
+  page = Nokogiri::HTML(open("#{wishlist_url}&layout=compact"))
   # get the divs and parse out their title and author
   page.css('tbody[class=itemWrapper]').each do |part|
     link_with_isbn = part.css('span[class="small productTitle"] a')
@@ -53,6 +53,10 @@ def get_wishlist(email, stream)
 
     # get the href attribute and try to get a match for the ISBN
     isbn_available = link.attr('href').match(/dp\/([\d\w]+)\//)
+    if not isbn_available
+      isbn_available = link.attr('href').match(/gp\/product\/([\d\w]+)[\/\?]/)
+    end
+    
     # did we get an ISBN?
     if isbn_available && isbn_available.captures.one?
       isbn = isbn_available.captures.pop
