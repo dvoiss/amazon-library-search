@@ -18,7 +18,7 @@ LIBRARY_NO_RESULTS_STRING = "Your search did not produce any results."
 LIBRARY_MY_STRING = "My Library"
 LIBRARY_NOT_CHECKED_OUT = "Not checked out"
 
-@@library_branch_location = ''
+@library_branch_location = ''
 
 # loop through the items of the wishlist,
 # compact wishlists are 1 page?
@@ -115,7 +115,7 @@ def parse_detail(body)
   page.css('table[class=summary] tr').each do |tablerow|
     if tablerow.to_s.index(LIBRARY_NOT_CHECKED_OUT) != nil
       # it's at our library, break out of loop
-      if @@library_branch_location != nil && tablerow.previous_sibling.to_s.index("Your Library") != nil 
+      if @library_branch_location != nil && tablerow.previous_sibling.to_s.index("Your Library") != nil 
         return [LIBRARY_MY_STRING]
       end
 
@@ -147,7 +147,7 @@ end
 
 # go through books and tell me if they are available at my local library
 def find_books(books, library, stream)
-  @@library_branch_location = library
+  @library_branch_location = library
   stream << "data: status: Finding which books are available...\n\n"
   book_available = false
 
@@ -162,7 +162,7 @@ def find_books(books, library, stream)
       isbn_search_range = related_isbns[count...count+5]
       isbn_search_string = isbn_search_range.join('+or+')
 
-      fetch_result = fetch("#{LIBRARY_SEARCH_URL}?&isbn=#{isbn_search_string}&location=#{@@library_branch_location}&format=Book&advancedSearch=submitted")
+      fetch_result = fetch("#{LIBRARY_SEARCH_URL}?&isbn=#{isbn_search_string}&location=#{@library_branch_location}&format=Book&advancedSearch=submitted")
 
       # unzip
       body = Zlib::GzipReader.new(StringIO.new(fetch_result[:response].body)).read
@@ -193,7 +193,7 @@ def find_books(books, library, stream)
     if libraries_available.include? LIBRARY_MY_STRING
       book_available = true
       stream << "data: #{html}\n\n"
-    elsif libraries_available.length > 0 && @@library_branch_location == ''
+    elsif libraries_available.length > 0 && @library_branch_location == ''
       book_available = true
       html += " at "
       libraries_available.uniq.each do |library|
