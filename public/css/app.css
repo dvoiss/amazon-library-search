@@ -139,6 +139,10 @@ a#back-btn {
  * ------------------------------------------------------------------------ */
 
 @media screen and (max-width: 768px) {
+  div#wrapper {
+    max-width: 768px;
+  }
+
   div#results-top {
     text-align: center;
   }
@@ -162,6 +166,7 @@ a#back-btn {
 
 @media screen and (max-width: 420px) {
   div#wrapper {
+    max-width: 420px;
     padding: 0 5% 50px 5%;
   }
 
