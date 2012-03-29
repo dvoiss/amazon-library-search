@@ -1,6 +1,6 @@
 ## A mash-up of Amazon / Library Thing / Chicago Public Library
 
-This is a Heroku app to check which books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`.
+This is a Sinatra app which checks books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`. The wishlist must be public so [Nokogiri](http://www.nokogiri.org) can parse it, this is necessary because Amazon does not expose wishlists via an API (more info below).
 
 ### Demo
 
@@ -23,7 +23,7 @@ Deploy to Heroku with Cedar stack:
     heroku create --stack cedar
     git push heroku master
 
-### Why:
+### About:
 
 I wrote this after going to the library to return a book, at which point I needed to check my Amazon wishlist (which serves as my reading to-do list) to see what to get next. A smaller branch of the Chicago Library meant more than 90% of the items on my list weren't stocked at this location or were checked out. This app finds items which are available: items which are in transit, checked out, on hold, etc. or not in stock at the library are ignored.
 
