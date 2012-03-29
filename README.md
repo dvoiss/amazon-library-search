@@ -1,6 +1,6 @@
 ## A mash-up of Amazon / Library Thing / Chicago Public Library
 
-This is a Sinatra app which checks books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`. The wishlist must be public so [Nokogiri](http://www.nokogiri.org) can parse it, this is necessary because Amazon does not expose wishlists via an API (more info below).
+This is a Sinatra app which checks books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`. The wishlist must be public so [Nokogiri](http://www.nokogiri.org) can parse it, this is necessary because Amazon does not expose wishlists via an API (more info below). Views are rendered using [haml](http://haml-lang.org).
 
 ### Demo
 

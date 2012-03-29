@@ -9,7 +9,7 @@ require './search'
 set :server, :thin
 
 get '/' do
-  #title "Amazon CPL Library Search"
+  @title = "Amazon CPL Library Search"
   haml :index
 end
 
@@ -29,11 +29,11 @@ get '/retrieve/:email/:library' do
 end
 
 error do
-  title "Sorry, error occurred."
+  @title = "Sorry, error occurred."
   haml :error
 end
 
 not_found do
-  title "404"
+  @title = "404"
   haml :error
 end
