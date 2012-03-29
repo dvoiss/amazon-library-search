@@ -1,0 +1,52 @@
+!!! 5
+<!--[if lt IE 7]> %html(class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    %html(class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    %html(class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!-->
+%html.no-js(dir="ltr" lang="en")
+<!--<![endif]-->
+%head
+  %meta(http-equiv="Content-Type" content="text/html; charset=UTF-8")
+  %meta(charset="UTF-8")
+
+  <!-- SEO stuff -->
+  %meta(name="author" content="D. Voiss")
+  %meta(name="description" content="An app which pulls an Amazon wishlist, parses it and grabs related ISBNs from Library-Thing, and searches the Chicago Public Library system for them.")
+  %meta(name="keywords" content="voiss, chicago, web development, web design, web standards, css, css3, html, html5, xhtml, programming, heroku, ruby, sinatra, library, amazon")
+  %meta(name="robots" content="noarchive")
+
+  <!-- possible legacy mobile browsers: -->
+  %meta(name="HandheldFriendly" content="True")
+  %meta(name="MobileOptimized" content="320")
+  <!-- android: target-densitydpi=device-dpi -->
+  %meta(name="viewport" content="width=device-width, target-densitydpi=device-dpi, initial-scale=1.0")
+
+  %title= @title
+  
+  %link(rel="stylesheet" type="text/css" media="all" href="/css/reset.css")
+  %link(rel="stylesheet" type="text/css" media="all" href="/css/app.css")
+
+  <!-- IE Fix for HTML5 tags -->
+  /[if lt IE 9]
+    %script(src="http://html5shiv.googlecode.com/svn/trunk/html5.js")
+
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  %script(src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+  
+  :javascript
+    window.jQuery || document.write('%script(src="/js/lib/jquery-1.7.2.min.js"><\/script>')
+
+  <!-- for browsers that don't implement EventSource -->
+  :javascript
+    window.EventSource || document.write('%script(src="/js/lib/eventsource.js"><\/script>')
+
+  %script(src="/js/app.js")
+
+%body
+
+  %header
+    %h1
+      %a(href="/" id="header-link") Chicago Library Search
+    %span An Amazon / Library Thing / CPL Mash-up
+
+  = yield

@@ -1,5 +1,7 @@
 require 'sinatra'
 require 'sinatra/streaming'
+require 'haml'
+require 'thin'
 
 # library-search / amazon / ISBN-thing code in 'search.rb'
 require './search'
@@ -7,7 +9,8 @@ require './search'
 set :server, :thin
 
 get '/' do
-  erb :index
+  #title "Amazon CPL Library Search"
+  haml :index
 end
 
 get '/retrieve/:email/:library' do
@@ -26,11 +29,11 @@ get '/retrieve/:email/:library' do
 end
 
 error do
-  title 'Sorry, error occurred.'
-  erb :error
+  title "Sorry, error occurred."
+  haml :error
 end
 
 not_found do
-  title '404'
-  erb :error
+  title "404"
+  haml :error
 end
