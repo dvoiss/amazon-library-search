@@ -1,10 +1,8 @@
 !!! 5
-<!--[if lt IE 7]> %html(class="no-js ie6 oldie" lang="en"> <![endif]-->
-<!--[if IE 7]>    %html(class="no-js ie7 oldie" lang="en"> <![endif]-->
-<!--[if IE 8]>    %html(class="no-js ie8 oldie" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!-->
-%html.no-js(dir="ltr" lang="en")
-<!--<![endif]-->
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]> <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]> <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" dir="ltr" lang="en"> <!--<![endif]-->
 %head
   %meta(http-equiv="Content-Type" content="text/html; charset=UTF-8")
   %meta(charset="UTF-8")
@@ -34,11 +32,11 @@
   %script(src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
   
   :javascript
-    window.jQuery || document.write('%script(src="/js/lib/jquery-1.7.2.min.js"><\/script>')
+    window.jQuery || document.write('<script src="/js/lib/jquery-1.7.2.min.js"><\/script>')
 
   <!-- for browsers that don't implement EventSource -->
   :javascript
-    window.EventSource || document.write('%script(src="/js/lib/eventsource.js"><\/script>')
+    window.EventSource || document.write('<script src="/js/lib/eventsource.js"><\/script>')
 
   %script(src="/js/app.js")
 
@@ -50,3 +48,5 @@
     %span An Amazon / Library Thing / CPL Mash-up
 
   = yield
+
+</html>
