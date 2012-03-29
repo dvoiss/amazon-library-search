@@ -10,8 +10,8 @@ $(document).ready(function() {
     event.preventDefault();
 
     var email = $('#email').val();
-    // quick reg-ex for e-mail validation (not an exact)
-    if (!email || !email.match(/^[\w\.]+@[^\.]+\.[\w\.]+$/))
+    // quick reg-ex for e-mail validation (not exact at all)
+    if (!email || !email.match(/^\S+@\S+.\S+$/))
     {
       showEmailValidation(); 
       return;

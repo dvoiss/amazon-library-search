@@ -117,9 +117,9 @@ def parse_detail(body)
 
   page = Nokogiri::HTML(body)
   page.css('table[class=summary] tr').each do |tablerow|
-    if tablerow.to_s.index(LIBRARY_NOT_CHECKED_OUT) != nil
+    if !tablerow.to_s.index(LIBRARY_NOT_CHECKED_OUT).nil? && tablerow.to_s.index("Reference").nil?
       # it's at our library, break out of loop
-      if @library_branch_location != nil && tablerow.previous_sibling.to_s.index("Your Library") != nil 
+      if !@library_branch_location.empty? && !tablerow.previous_sibling.to_s.downcase.index("library").nil?
         return [LIBRARY_MY_STRING]
       end
 
@@ -156,8 +156,8 @@ def find_books(books, library, stream)
   book_available = false
 
   books.each do |book|
-    # get related isbns and limit collection to a maximum of 20 ISBNs
-    related_isbns = get_related_isbns(book[:isbn])[0...20]
+    # get related isbns and limit collection to a maximum # of ISBNs
+    related_isbns = get_related_isbns(book[:isbn])[0...25]
 
     libraries_available = []
     # search through ISBNs, 5 at a time (due to limits on chipublib search),
