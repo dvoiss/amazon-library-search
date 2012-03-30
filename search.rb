@@ -154,10 +154,10 @@ def find_books(books, library, stream)
   @library_branch_location = library
   stream << "data: status: Finding which books are available...\n\n"
   book_available = false
-
+  
   books.each do |book|
     # get related isbns and limit collection to a maximum # of ISBNs
-    related_isbns = get_related_isbns(book[:isbn])[0...25]
+    related_isbns = get_related_isbns(book[:isbn])[0...35]
 
     libraries_available = []
     # search through ISBNs, 5 at a time (due to limits on chipublib search),
@@ -175,13 +175,13 @@ def find_books(books, library, stream)
         if body.index(LIBRARY_NO_RESULTS_STRING) == nil
           # assemble a collection of results
           page = Nokogiri::HTML(body)
-          libraries_available = parse_search_results(page)
+          libraries_available.concat parse_search_results(page)
         else
           # no results for this book's ISBN(s)
           # puts LIBRARY_NO_RESULTS_STRING
         end
       else # detail, one result for this book's ISBN(s)
-        libraries_available = parse_detail(body)
+        libraries_available.concat parse_detail(body)
       end
 
       # if it's available at our library, don't bother going through any other ISBNs for this book,
@@ -202,7 +202,7 @@ def find_books(books, library, stream)
       html += " at "
       libraries_available.uniq.each do |library|
         html += "<span class='library'>#{library}</span>"
-        if (libraries_available.last != library); html += ", " end
+        if (libraries_available.uniq.last != library); html += ", " end
       end
       html += "</li>"
       stream << "data: #{html}\n\n"
