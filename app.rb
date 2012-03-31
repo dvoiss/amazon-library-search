@@ -1,3 +1,7 @@
+# The server code for the Amazon / Library search app:
+# cpl-search.herokuapp.com
+# github.com/dvoiss/amazon-library-search/
+
 require 'sinatra'
 require 'sinatra/streaming'
 require 'haml'
@@ -13,13 +17,14 @@ get '/' do
   haml :index
 end
 
-get '/retrieve/:email/:library' do
-  library = params[:library] == "0" ? "" : params[:library]
+get '/retrieve/:email/:code/:location' do
+  library_code      = params[:code] == "0" ? "" : params[:code]
+  library_location  = params[:location]
   content_type "text/event-stream"
   stream do |out|
     begin
       books = get_wishlist(params[:email], out)
-      find_books(books, library, out) unless books.nil? || books.empty?
+      find_books(books, library_code, library_location, out) unless books.nil? || books.empty?
       out << "data: #{nil}\n\n"
     rescue IOError
       puts "Stream not opened for writing..."

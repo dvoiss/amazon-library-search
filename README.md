@@ -1,6 +1,6 @@
 ## A mash-up of Amazon / Library Thing / Chicago Public Library
 
-This is a Sinatra app which checks books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`. The wishlist must be public so [Nokogiri](http://www.nokogiri.org) can parse it, this is necessary because Amazon does not expose wishlists via an API (more info below). Views are rendered using [haml](http://haml-lang.org).
+This is a Sinatra app which checks books from an Amazon wishlist (supplied by an email address) are available at a given Chicago library. All the relevant code is in `search.rb` with the Sinatra code in `app.rb`. The wishlist must be public so [Nokogiri](http://www.nokogiri.org) can parse it, this is necessary because Amazon does not expose wishlists via an API (more info below). Views are rendered using [haml](http://haml-lang.org). Uses HTML5 so your mileage may vary on older browsers (I do make use of [html5shiv](http://html5shiv.googlecode.com/svn/trunk/html5.js) and an [event-source polyfill](https://github.com/remy/polyfills)).
 
 ### Demo
 
@@ -25,7 +25,7 @@ Deploy to Heroku with Cedar stack:
 
 ### About:
 
-I wrote this after going to the library to return a book, at which point I needed to check my Amazon wishlist (which serves as my reading to-do list) to see what to get next. A smaller branch of the Chicago Library meant more than 90% of the items on my list weren't stocked at this location or were checked out. This app finds items which are available: items which are in transit, checked out, on hold, etc. or not in stock at the library are ignored.
+I wrote this after going to the library to return a book, at which point I needed to check my Amazon wishlist (which serves as my reading to-do list) to see what to get next. A smaller branch of the Chicago Library meant more than 90% of the items on my list weren't stocked at this location or were checked out. Plus I had to check the items on my list one by one, which was inconvenient enough for me to make this app. This app finds items which are available, those which are in transit, checked out, on hold, etc. or not in stock at the library are ignored.
 
 The first step is to grab the Amazon wishlist, filtered by books, and use [Nokogiri](http://www.nokogiri.org) to parse the books into a collection (necessary because Amazon does not expose wishlists via an api). The ISBN is parsed from Amazon and sent to [Library Thing](http://www.librarything.com)'s ISBN api to get related ISBN numbers for the same book; when a book has a new edition it is given a different ISBN number (some books on my wishlist have 20+ numbers).
 

@@ -1,3 +1,8 @@
+/**
+ * The client application code for the Amazon / Library search app:
+ * cpl-search.herokuapp.com
+ * github.com/dvoiss/amazon-library-search/
+ */
 $(document).ready(function() {
   // the event source
   var src;
@@ -30,7 +35,7 @@ $(document).ready(function() {
         noWishlistFound = false;
 
     if (src) src.close();
-    src = new EventSource('/retrieve/' + email + '/' + libraryCode);
+    src = new EventSource('/retrieve/' + email + '/' + libraryCode + '/' + library);
     src.onmessage = function(event) {
       (!event.data) ? handleDataFinished() : handleData(event.data);
     }
