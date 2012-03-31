@@ -8,8 +8,10 @@ $(document).ready(function() {
   var src;
 
   // restore email from localStorage if available
-  var storageKey = "CPL_EMAIL";
-  $("#email").val(localStorage.getItem(storageKey));
+  var emailStorageKey = "CPL_EMAIL";
+  $("#email").val(localStorage.getItem(emailStorageKey));
+  var libraryStorageKey = "CPL_LIBRARY";
+  $("#library-select").val(localStorage.getItem(libraryStorageKey));
 
   $("#search-btn").click(function(event) {
     event.preventDefault();
@@ -25,7 +27,8 @@ $(document).ready(function() {
       hideEmailValidation();
 
     // save email in local storage
-    localStorage.setItem(storageKey, email);
+    localStorage.setItem(emailStorageKey, email);
+    localStorage.setItem(libraryStorageKey, $("#library-select").val());
 
     newSearch();
 
