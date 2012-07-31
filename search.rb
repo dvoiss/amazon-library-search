@@ -16,7 +16,7 @@ LIBRARY_SEARCH_URL             = "#{LIBRARY_BASE_URL}/search/results/"
 LIBRARY_REFERER_URL            = "#{LIBRARY_BASE_URL}/search/advanced/"
 LIBRARY_NO_RESULTS_STRING      = "Your search did not produce any results."
 LIBRARY_MY_STRING              = "My Library"
-LIBRARY_NOT_CHECKED_OUT_STRING = "Not checked out"
+LIBRARY_NOT_CHECKED_OUT_STRING = "Not Checked Out"
 
 # holds the library name
 @library_branch_location = ''
@@ -137,15 +137,16 @@ def parse_detail(page)
   libraries = []
 
   body = Nokogiri::HTML(page)
-  body.css('table[class=summary] tr').each do |tablerow|
+  body.css('table[class=summary] tr').each do |table_row|
     # does the tablerow contain the "not checked out" string?
     # I don't want "reference" material that can't be checked out
-    if tablerow.to_s.include?(LIBRARY_NOT_CHECKED_OUT_STRING) && !tablerow.to_s.include?("Reference")
+    tablerow = table_row.to_s
+    if tablerow.include?(LIBRARY_NOT_CHECKED_OUT_STRING) && !tablerow.include?("Reference")
       # if it's at our library, return
-      return [LIBRARY_MY_STRING] if @library_branch_location && tablerow.to_s.include?(@library_branch_location)
+      return [LIBRARY_MY_STRING] if @library_branch_location && tablerow.include?(@library_branch_location)
 
       # it isn't checked out at this location, save library name
-      libraries.push tablerow.css('td').first.text
+      libraries.push table_row.css('td').first.text
     end
   end
 

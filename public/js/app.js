@@ -45,7 +45,7 @@ $(document).ready(function() {
     src.onerror = function(event) {
       src.close();
       $('#progress-spinner').hide();
-      $('#status').html("An error may have occurred.");
+      $('#status').html("An error may have occurred.<div style=\"clear: both\"/><br/>Due to lack of an API, library pages and Amazon pages are scraped and then parsed. A change in the Amazon or library HTML/CSS code could have caused the error.<br/>Contact the author: <a href='http://www.twitter.com/dvoiss' title='author\'s twitter'>@dvoiss</a></div>");
     }
 
     function handleDataFinished() {
